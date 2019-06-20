@@ -11,12 +11,12 @@ int ledOn = 0;
 int alarmActiva = 0;
 const int led = 13;
 
-const int trigPin = 9;
-const int echoPin = 10;
-const int buzzerPin = 8;
-int redPin= 7;
-int greenPin = 6;
-int bluePin = 5;
+const int trigPin = 8;
+const int echoPin = 9;
+const int buzzerPin = 6;
+int redPin= A1;
+int greenPin = A2;
+int bluePin = A3;
 
 long duration;
 int distance;
@@ -146,10 +146,12 @@ void loop() {
       }  
   }
 
-  void setColor(int redValue, int greenValue, int blueValue) {
+  
+}
+
+void setColor(int redValue, int greenValue, int blueValue) {
     analogWrite(redPin, redValue);
     analogWrite(greenPin, greenValue);
     analogWrite(bluePin, blueValue);
   }
-}
   
