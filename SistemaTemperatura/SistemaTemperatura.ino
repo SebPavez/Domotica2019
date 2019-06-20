@@ -1,3 +1,5 @@
+#include <DHT11.h>
+
 #include <SPI.h>
 #include <Ethernet.h>
 
@@ -9,30 +11,23 @@ EthernetServer server(80);
 String readString;
 int ledOn = 0;
 int alarmActiva = 0;
-const int led = 13;
+int relay = 8;
+volatile byte relayState = LOW;
+DHT11 dht11(4);
 
-const int trigPin = 9;
-const int echoPin = 10;
-const int buzzerPin = 8;
-int redPin= 7;
-int greenPin = 6;
-int bluePin = 5;
-
-long duration;
-int distance;
 int contador = 0;
 
 void setup() {
-  pinMode(redPin, OUTPUT);
-  pinMode(greenPin, OUTPUT);
-  pinMode(bluePin, OUTPUT);
-  pinMode(trigPin, OUTPUT);
-  pinMode(echoPin, INPUT);
-  pinMode(buzzerPin, OUTPUT);
+  pinMode(relay, OUTPUT);
+  digitalWrite(relay, HIGH);
+  
   Serial.begin(9600);
   Serial.println("Ethernet WebServer Example");
+  
   pinMode(led, OUTPUT);
+  
   digitalWrite(led, LOW);
+  
   Ethernet.begin(mac, ip);
   if (Ethernet.hardwareStatus() == EthernetNoHardware) {
     Serial.println("Ethernet shield was not found.  Sorry, can't run without hardware. :(");
@@ -53,42 +48,33 @@ void setup() {
 
 void loop() {
   // listen for incoming clients
-  if(alarmActiva == 1){
-    digitalWrite(trigPin, LOW);
-    delayMicroseconds(2);
-    
-    digitalWrite(trigPin, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(trigPin, LOW);
-    
-    duration = pulseIn(echoPin, HIGH);
-    
-    distance= duration*0.034/2;
-    
-    Serial.print("Distance: ");
-    Serial.println(distance);
-    //TODO: Determinar umbral de activacion para RGB
-    if(distance < 50){
-        tone(buzzerPin, 1000);
-        switch(contador){
-           case 0:
-             setColor(255, 0,0);
-             break;
-           case 1:
-             setColor(0,255,0);
-             break;
-           case 2:
-             setColor(0,0,255);
-             break;
-        }
-        contador++;
-        if(contador == 3){
-          contador = 0;
-        } 
-    }
-  } else {
-    noTone(buzzerPin);
+  int err;
+  float temp, humi;
+  if((err=dht11.read(humi, temp))==0)
+  {
+    Serial.print("temperature:");
+    Serial.print(temp);
+    Serial.print(" humidity:");
+    Serial.print(humi);
+    Serial.println();
+   if(temp < 20){
+      //TODO: Encender motor
+   }else{
+      //TODO: Apagar motor
+   }
   }
+  else
+  {
+    Serial.println();
+    Serial.print("Error No :");
+    Serial.print(err);
+    Serial.println();    
+  }
+    
+  
+    
+   
+  
    EthernetClient client = server.available();
    if (client) {
         while (client.connected()) {
@@ -145,11 +131,7 @@ void loop() {
         }
       }  
   }
+  delay(DHT11_RETRY_DELAY);
 
-  void setColor(int redValue, int greenValue, int blueValue) {
-    analogWrite(redPin, redValue);
-    analogWrite(greenPin, greenValue);
-    analogWrite(bluePin, blueValue);
-  }
 }
   
