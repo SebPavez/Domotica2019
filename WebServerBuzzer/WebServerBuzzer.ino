@@ -13,13 +13,16 @@ const int led = 13;
 
 const int trigPin = 9;
 const int echoPin = 10;
+const int buzzerPin = 6;
 
 long duration;
 int distance;
+int contador = 0;
 
 void setup() {
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
+  pinMode(buzzerPin, OUTPUT);
   Serial.begin(9600);
   Serial.println("Ethernet WebServer Example");
   pinMode(led, OUTPUT);
@@ -59,9 +62,26 @@ void loop() {
     Serial.print("Distance: ");
     Serial.println(distance);
     //TODO: Determinar umbral de activacion para RGB
-    //TODO: Encender buzzer si pasa umbral
+    if(distance < 50){
+        tone(buzzerPin, 1000);
+        switch(contador){
+           case 0:
+             setColor(255, 0,0);
+             break;
+           case 1:
+             setColor(0,255,0);
+             break;
+           case 2:
+             setColor(0,0,255);
+             break;
+        }
+        contador++;
+        if(contador == 3){
+          contador = 0;
+        } 
+    }
   } else {
-    //TODO: Apagar buzzer
+    noTone(buzzerPin);
   }
    EthernetClient client = server.available();
    if (client) {
@@ -118,6 +138,12 @@ void loop() {
           
         }
       }  
+  }
+
+  void setColor(int redValue, int greenValue, int blueValue) {
+    analogWrite(redPin, redValue);
+    analogWrite(greenPin, greenValue);
+    analogWrite(bluePin, blueValue);
   }
 }
   
